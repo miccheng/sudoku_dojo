@@ -58,6 +58,13 @@ describe Sudoku do
       end
     end
 
+    describe '#neighbours' do
+      it 'returns neighbouring indexes' do
+        # 0, 9, 18, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 45, 46, 47, 54, 63, 72
+        expect(subject.neighbours(27)).to eq [0, 9, 18, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 45, 46, 47, 54, 63, 72]
+      end
+    end
+
     describe '#valid?' do
       it 'returns true on all valid answers' do
         expect(subject).to be_valid
@@ -70,18 +77,7 @@ describe Sudoku do
       end
     end
 
-    describe '#suitable_num?' do
-      it 'returns true for suitable number' do
-        expect(subject.suitable_num?(3, 6)).to be
-      end
-
-      it 'returns false for unsuitable number' do
-        expect(subject.suitable_num?(3, 7)).not_to be
-        expect(subject).to be_valid
-      end
-    end
-
-    xdescribe '#build_puzzle!' do
+    describe '#build_puzzle!' do
       subject{ Sudoku.new }
 
       it 'builds a valid puzzle' do
@@ -91,7 +87,7 @@ describe Sudoku do
       end
     end
 
-    describe '#display_board' do
+    describe '#display_answers' do
       it 'shows the current state' do
         expected = <<~EOT
         81 tiles filled up:
@@ -109,7 +105,13 @@ describe Sudoku do
         | 3 4 5 | 2 8 6 | 1 7 9 |
         -------------------------
         EOT
-        expect{ subject.display_board }.to output(expected).to_stdout
+        expect{ subject.display_answers }.to output(expected).to_stdout
+      end
+    end
+
+    describe '#display_puzzle' do
+      it 'shows the current puzzle' do
+        expect(subject.display_puzzle).to be
       end
     end
   end

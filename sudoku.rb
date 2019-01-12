@@ -9,16 +9,16 @@ class Sudoku
     @tiles = default_tiles.empty? ? blank_board : default_tiles
   end
 
-  def row(num)
-    cell_values_for(cell_indexes_for(:row, num))
+  def row(num, tiles=@tiles)
+    cell_values_for(cell_indexes_for(:row, num), tiles)
   end
 
-  def column(num)
-    cell_values_for(cell_indexes_for(:column, num))
+  def column(num, tiles=@tiles)
+    cell_values_for(cell_indexes_for(:column, num), tiles)
   end
 
-  def grid(num)
-    cell_values_for(cell_indexes_for(:grid, num))
+  def grid(num, tiles=@tiles)
+    cell_values_for(cell_indexes_for(:grid, num), tiles)
   end
 
   def self.checker(tiles)
@@ -41,16 +41,14 @@ class Sudoku
     valid? && complete?
   end
 
-  def suitable_num?(index, candidate_num)
-    original_num = @tiles[index]
-
+  def neighbours(index)
     row_num, column_num, grid_num = coord_of(index)
 
-    @tiles[index] = candidate_num
-    result = [row(row_num), column(column_num), grid(grid_num)].map { |tiles| Sudoku.checker(tiles) }
-
-    @tiles[index] = original_num
-    result.all?
+    Set.new([
+      cell_indexes_for(:row, row_num),
+      cell_indexes_for(:column, column_num),
+      cell_indexes_for(:grid, grid_num),
+    ].flatten).to_a.sort
   end
 
   def build_puzzle!
@@ -60,46 +58,56 @@ class Sudoku
     puts "Unable to build Puzzle" unless fill_cell(0)
   end
 
-  def display_board
-    puts "#{@tiles.compact.count} tiles filled up:"
-    print "-------------------------\n" +
-      (1..3).map{ |r| print_line(row(r)) }.join("\n") +
-      "\n|-------+-------+-------|\n" +
-      (4..6).map{ |r| print_line(row(r)) }.join("\n") +
-      "\n|-------+-------+-------|\n" +
-      (7..9).map{ |r| print_line(row(r)) }.join("\n") +
-      "\n-------------------------\n"
-    $stdout.flush
+  def display_answers
+    display_board(@tiles)
+  end
+
+  def display_puzzle
+    puzzle = @tiles.dup
+
+    (0..80).to_a.sample(40).each do |i|
+      puzzle[i] = nil
+    end
+
+    display_board(puzzle)
   end
 
   private
 
+  def display_board(tiles)
+    puts "#{tiles.compact.count} tiles filled up:"
+    print "-------------------------\n" +
+      (1..3).map{ |r| print_line(row(r, tiles)) }.join("\n") +
+      "\n|-------+-------+-------|\n" +
+      (4..6).map{ |r| print_line(row(r, tiles)) }.join("\n") +
+      "\n|-------+-------+-------|\n" +
+      (7..9).map{ |r| print_line(row(r, tiles)) }.join("\n") +
+      "\n-------------------------\n"
+    $stdout.flush
+  end
+
   def print_line(cells)
-    '| ' + cells[0..2].join(' ') + ' | ' +
-      cells[3..5].join(' ') + ' | ' +
-      cells[6..8].join(' ') + ' |'
+    str = '|'
+
+    cells.each_with_index do |cell, index|
+      str += " #{cell.nil? ? ' ' : cell}"
+      str += ' |' if (index+1) % 3 == 0
+    end
+
+    str
   end
 
   def fill_cell(index)
-    puts "Looking for candidate for pos: #{index}"
-
     row_num, column_num, grid_num = coord_of(index)
     unique_values = Set.new([row(row_num), column(column_num), grid(grid_num)].flatten.compact).to_a.sort
-    puts "Currently placed values: #{unique_values}"
 
     available_options = (1..9).to_a - unique_values
-    puts "Available options are: #{available_options}"
 
     available_options.shuffle.each do |n|
-      puts "Chosen value for #{index} is #{n}"
       @tiles[index] = n
-      display_board
+      display_answers
 
-      if index == (@tiles.count - 1) || fill_cell(index + 1)
-        return true
-      else
-        puts "Trying the next item in available options"
-      end
+      return true if index == (@tiles.count - 1) || fill_cell(index + 1)
     end
 
     @tiles[index] = nil
@@ -142,7 +150,9 @@ class Sudoku
     column_num = start_index % BOARD_SIZE
     column_num = 9 if column_num.zero?
 
-    grid_num = (row_num / 3.0).ceil * (column_num / 3.0).ceil
+    grid_y = (row_num / 3.0).ceil
+    grid_x = (column_num / 3.0).ceil
+    grid_num = ((grid_y - 1) * 3) + grid_x
 
     [row_num, column_num, grid_num]
   end
