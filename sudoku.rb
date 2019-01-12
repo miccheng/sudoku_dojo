@@ -4,9 +4,12 @@ class Sudoku
   attr_reader :tiles
 
   BOARD_SIZE = 9
+  DEFAULT_EMPTY_SLOTS = 40
 
-  def initialize(default_tiles=[])
+  def initialize(default_tiles=[], default_blanks=[], empty_slots=40)
     @tiles = default_tiles.empty? ? blank_board : default_tiles
+    @puzzle_blanks = default_blanks unless default_blanks.empty?
+    @empty_slots = empty_slots || DEFAULT_EMPTY_SLOTS
   end
 
   def row(num, tiles=@tiles)
@@ -56,6 +59,8 @@ class Sudoku
     puts "Trying to build a board"
     @tiles = blank_board
     puts "Unable to build Puzzle" unless fill_cell(0)
+
+    display_puzzle
   end
 
   def display_answers
@@ -65,11 +70,15 @@ class Sudoku
   def display_puzzle
     puzzle = @tiles.dup
 
-    (0..80).to_a.sample(40).each do |i|
+    puzzle_blanks.each do |i|
       puzzle[i] = nil
     end
 
     display_board(puzzle)
+  end
+
+  def puzzle_blanks
+    @puzzle_blanks ||= (0..80).to_a.sample(@empty_slots)
   end
 
   private
@@ -105,7 +114,7 @@ class Sudoku
 
     available_options.shuffle.each do |n|
       @tiles[index] = n
-      display_answers
+      # display_answers
 
       return true if index == (@tiles.count - 1) || fill_cell(index + 1)
     end
