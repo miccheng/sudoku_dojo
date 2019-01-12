@@ -8,30 +8,15 @@ class Sudoku
   end
 
   def row(num)
-    start_index = (num - 1) * BOARD_SIZE
-
-    @tiles[start_index..start_index+8]
+    cell_values_for(cell_indexes_for(:row, num))
   end
 
   def column(num)
-    start_index = (num - 1)
-
-    (0..BOARD_SIZE-1).map { |n| @tiles[start_index + (n * BOARD_SIZE)] }
+    cell_values_for(cell_indexes_for(:column, num))
   end
 
   def grid(num)
-    grid_row = (num / 3.0).ceil
-    upper_bound = grid_row * 3
-
-    grid_col = (num % 3)
-    grid_column_mapping = {
-      1 => 0,
-      2 => 3,
-      0 => 6
-    }
-    column_index = grid_column_mapping[grid_col]
-
-    ((upper_bound - 2)..upper_bound).map { |r| row(r)[column_index..column_index+2] }.flatten
+    cell_values_for(cell_indexes_for(:grid, num))
   end
 
   def self.checker(tiles)
@@ -113,6 +98,34 @@ class Sudoku
     end
   end
 
+  def cell_indexes_for(type, num)
+    case type
+    when :row
+      start_index = (num - 1) * BOARD_SIZE
+      (start_index..start_index+8).to_a
+    when :column
+      start_index = (num - 1)
+      (0..BOARD_SIZE-1).map { |n| start_index + (n * BOARD_SIZE) }
+    when :grid
+      grid_row = (num / 3.0).ceil
+      upper_bound = grid_row * 3
+
+      grid_col = (num % 3)
+      grid_column_mapping = {
+          1 => 0,
+          2 => 3,
+          0 => 6
+      }
+      column_index = grid_column_mapping[grid_col]
+
+      ((upper_bound - 2)..upper_bound).map { |r| cell_indexes_for(:row, r)[column_index..column_index+2] }.flatten
+    end
+  end
+
+  def cell_values_for(indexes)
+    indexes.map{ |i| @tiles[i] }
+  end
+
   def coord_of(index)
     start_index = (index + 1)
 
@@ -127,15 +140,15 @@ class Sudoku
   end
 
   def all_rows
-    (1..BOARD_SIZE).map { |r| row(r) }
+    (1..BOARD_SIZE).map(&method(:row))
   end
 
   def all_columns
-    (1..BOARD_SIZE).map { |r| column(r) }
+    (1..BOARD_SIZE).map(&method(:column))
   end
 
   def all_grids
-    (1..BOARD_SIZE).map { |r| grid(r) }
+    (1..BOARD_SIZE).map(&method(:grid))
   end
 
   def blank_board
