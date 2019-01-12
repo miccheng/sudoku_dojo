@@ -69,10 +69,7 @@ class Sudoku
 
   def display_puzzle
     puzzle = @tiles.dup
-
-    puzzle_blanks.each do |i|
-      puzzle[i] = nil
-    end
+    puzzle_blanks.each { |i| puzzle[i] = nil }
 
     display_board(puzzle)
   end
