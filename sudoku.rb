@@ -78,7 +78,11 @@ class Sudoku
   end
 
   def puzzle_blanks
-    @puzzle_blanks ||= (0..80).to_a.sample(@empty_slots)
+    @puzzle_blanks ||= build_blanks!
+  end
+
+  def build_blanks!
+    @puzzle_blanks = (0..80).to_a.sample(@empty_slots)
   end
 
   private

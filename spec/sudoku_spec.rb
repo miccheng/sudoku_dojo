@@ -60,7 +60,6 @@ describe Sudoku do
 
     describe '#neighbours' do
       it 'returns neighbouring indexes' do
-        # 0, 9, 18, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 45, 46, 47, 54, 63, 72
         expect(subject.neighbours(27)).to eq [0, 9, 18, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 45, 46, 47, 54, 63, 72]
       end
     end
@@ -110,8 +109,25 @@ describe Sudoku do
     end
 
     describe '#display_puzzle' do
+      subject{ Sudoku.new(valid_tiles, [0, 1, 2, 3, 79, 80]) }
       it 'shows the current puzzle' do
-        expect(subject.display_puzzle).to be
+        expected = <<~EOT
+        75 tiles filled up:
+        -------------------------
+        |       |   7 8 | 9 1 2 |
+        | 6 7 2 | 1 9 5 | 3 4 8 |
+        | 1 9 8 | 3 4 2 | 5 6 7 |
+        |-------+-------+-------|
+        | 8 5 9 | 7 6 1 | 4 2 3 |
+        | 4 2 6 | 8 5 3 | 7 9 1 |
+        | 7 1 3 | 9 2 4 | 8 5 6 |
+        |-------+-------+-------|
+        | 9 6 1 | 5 3 7 | 2 8 4 |
+        | 2 8 7 | 4 1 9 | 6 3 5 |
+        | 3 4 5 | 2 8 6 | 1     |
+        -------------------------
+        EOT
+        expect{ subject.display_puzzle }.to output(expected).to_stdout
       end
     end
   end
