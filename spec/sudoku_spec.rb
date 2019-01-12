@@ -38,6 +38,7 @@ describe Sudoku do
       it 'returns row' do
         expect(subject.row(1)).to eq [5, 3, 4, 6, 7, 8, 9, 1, 2]
         expect(subject.row(2)).to eq [6, 7, 2, 1, 9, 5, 3, 4, 8]
+        expect(subject.row(4)).to eq [8, 5, 9, 7, 6, 1, 4, 2, 3]
       end
     end
 
@@ -45,6 +46,7 @@ describe Sudoku do
       it 'returns column' do
         expect(subject.column(1)).to eq [5, 6, 1, 8, 4, 7, 9, 2, 3]
         expect(subject.column(2)).to eq [3, 7, 9, 5, 2, 1, 6, 8, 4]
+        expect(subject.column(4)).to eq [6, 1, 3, 7, 8, 9, 5, 4, 2]
       end
     end
 
@@ -52,6 +54,7 @@ describe Sudoku do
       it 'returns grid' do
         expect(subject.grid(1)).to eq [5, 3, 4, 6, 7, 2, 1, 9, 8]
         expect(subject.grid(2)).to eq [6, 7, 8, 1, 9, 5, 3, 4, 2]
+        expect(subject.grid(4)).to eq [8, 5, 9, 4, 2, 6, 7, 1, 3]
       end
     end
 
@@ -85,6 +88,28 @@ describe Sudoku do
         subject.build_puzzle!
 
         expect(subject).to be_win
+      end
+    end
+
+    describe '#display_board' do
+      it 'shows the current state' do
+        expected = <<~EOT
+        81 tiles filled up:
+        -------------------------
+        | 5 3 4 | 6 7 8 | 9 1 2 |
+        | 6 7 2 | 1 9 5 | 3 4 8 |
+        | 1 9 8 | 3 4 2 | 5 6 7 |
+        |-------+-------+-------|
+        | 8 5 9 | 7 6 1 | 4 2 3 |
+        | 4 2 6 | 8 5 3 | 7 9 1 |
+        | 7 1 3 | 9 2 4 | 8 5 6 |
+        |-------+-------+-------|
+        | 9 6 1 | 5 3 7 | 2 8 4 |
+        | 2 8 7 | 4 1 9 | 6 3 5 |
+        | 3 4 5 | 2 8 6 | 1 7 9 |
+        -------------------------
+        EOT
+        expect{ subject.display_board }.to output(expected).to_stdout
       end
     end
   end

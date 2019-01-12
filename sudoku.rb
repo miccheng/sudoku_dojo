@@ -1,3 +1,5 @@
+require 'set'
+
 class Sudoku
   attr_reader :tiles
 
@@ -52,50 +54,56 @@ class Sudoku
   end
 
   def build_puzzle!
-    loop do
-      try_build
-      break if valid? && complete?
-    end
+    puts "=========================================="
+    puts "Trying to build a board"
+    @tiles = blank_board
+    puts "Unable to build Puzzle" unless fill_cell(0)
+  end
+
+  def display_board
+    puts "#{@tiles.compact.count} tiles filled up:"
+    print "-------------------------\n" +
+      (1..3).map{ |r| print_line(row(r)) }.join("\n") +
+      "\n|-------+-------+-------|\n" +
+      (4..6).map{ |r| print_line(row(r)) }.join("\n") +
+      "\n|-------+-------+-------|\n" +
+      (7..9).map{ |r| print_line(row(r)) }.join("\n") +
+      "\n-------------------------\n"
+    $stdout.flush
   end
 
   private
 
-  def try_build
-    puts "=========================================="
-    puts "Trying to build a board"
+  def print_line(cells)
+    '| ' + cells[0..2].join(' ') + ' | ' +
+      cells[3..5].join(' ') + ' | ' +
+      cells[6..8].join(' ') + ' |'
+  end
 
-    @tiles = blank_board
+  def fill_cell(index)
+    puts "Looking for candidate for pos: #{index}"
 
-    (0..80).each do |index|
-      puts "Looking for candidate for pos: #{index}"
+    row_num, column_num, grid_num = coord_of(index)
+    unique_values = Set.new([row(row_num), column(column_num), grid(grid_num)].flatten.compact).to_a.sort
+    puts "Currently placed values: #{unique_values}"
 
-      candidates = (1..9).to_a
+    available_options = (1..9).to_a - unique_values
+    puts "Available options are: #{available_options}"
 
-      loop do
-        break if candidates.empty?
+    available_options.shuffle.each do |n|
+      puts "Chosen value for #{index} is #{n}"
+      @tiles[index] = n
+      display_board
 
-        candidates.shuffle!
-        candidate_num = candidates.slice!(1)
-
-        if candidate_num.nil?
-          candidate_num = candidates[0]
-          candidates = []
-        end
-
-        puts "Checking: #{candidate_num} for pos: #{index}"
-
-        if suitable_num?(index, candidate_num)
-          puts "Yup! #{candidate_num} is suitable."
-          @tiles[index] = candidate_num
-          break
-        end
-      end
-
-      if @tiles[index].nil?
-        puts 'Seems like the last candidate was not found.'
-        break
+      if index == (@tiles.count - 1) || fill_cell(index + 1)
+        return true
+      else
+        puts "Trying the next item in available options"
       end
     end
+
+    @tiles[index] = nil
+    false
   end
 
   def cell_indexes_for(type, num)
@@ -122,8 +130,8 @@ class Sudoku
     end
   end
 
-  def cell_values_for(indexes)
-    indexes.map{ |i| @tiles[i] }
+  def cell_values_for(indexes, tiles=@tiles)
+    indexes.map{ |i| tiles[i] }
   end
 
   def coord_of(index)
